@@ -56,7 +56,6 @@ export const useComponetsStore = create<State & Action>(
     ],
     addComponent: (component, parentId) =>
       set((state) => {
-        // 
         if (parentId) {
           const parentComponent = getComponentById(
             parentId,
