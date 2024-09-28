@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { MouseEventHandler, useEffect, useState } from "react";
 import { useComponetsStore, Component } from '../../stores/components';
 import { useComponentConfigStore } from "../../stores/component-config";
+import HoverMask from '../HoverMask'
 
 export function EditArea() {
   const { components, addComponent } = useComponetsStore();
@@ -30,11 +31,51 @@ export function EditArea() {
     })
   }
 
+  const [hoverComponentId, setHoverComponentId] = useState<number>();
+
+  const handleMouseOver: MouseEventHandler = (e) => {
+    /**
+     * 第一种获取 componentId 的方法：
+     * 为什么用 nativeEvent：因为 react 里的 event 是合成事件，有的原生事件的属性它没有
+     * composedPath 是从触发事件的元素到 html 根元素的路径
+     * 在整个路径从底向上找，找到第一个有 data-component-id 的元素
+     * 就是当前 hover 的组件
+     */
+    // const path = e.nativeEvent.composedPath();
+    // for (let i = 0; i < path.length; i += 1) {
+    //   const ele = path[i] as HTMLElement;
+    //   const componentId = ele.dataset?.componentId;
+    //   if (componentId) {
+    //     setHoverComponentId(+componentId)
+    //     return;
+    //   }
+    // }
+
+    // 第二种获取 componentId 的方法：
+    const target = (e.target as HTMLElement).closest('[data-component-id]');
+    if (target) {
+      const componentId = target.getAttribute('data-component-id')
+      componentId && setHoverComponentId(Number(componentId))
+    }
+  }
+
   return (
-    <div className="h-[100%]">
-      <pre>
-      </pre>
+    <div
+      className="h-[100%] edit-area"
+      onMouseOver={handleMouseOver}
+      onMouseLeave={() => {
+        setHoverComponentId(undefined)
+      }}
+    >
       {renderComponents(components)}
+      {hoverComponentId && (
+        <HoverMask
+          portalWrapperClassName='portal-wrapper'
+          containerClassName="edit-area"
+          componentId={hoverComponentId}
+        />
+      )}
+      <div className="portal-wrapper"></div>
     </div>
   )
 }
