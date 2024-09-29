@@ -1,12 +1,15 @@
 import { useDrag } from "react-dnd";
 
 export interface MaterialItemProps {
-  name: string
+  /**组件名称 */
+  name: string;
+  /**组件描述 */
+  desc: string;
 }
 
 export function MaterialItem(props: MaterialItemProps) {
 
-  const { name } = props;
+  const { name, desc } = props;
 
   const [_, drag] = useDrag({
     // 当前 drag 的元素的标识
@@ -31,7 +34,7 @@ export function MaterialItem(props: MaterialItemProps) {
         hover:bg-[#ccc]
       '
     >
-      {name}
+      {desc}
     </div>
   )
 }

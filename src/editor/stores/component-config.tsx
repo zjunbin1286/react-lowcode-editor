@@ -9,6 +9,8 @@ export interface ComponentConfig {
   name: string;
   /**组件默认属性 */
   defaultProps: Record<string, any>;
+  /**组件描述 */
+  desc: string;
   /**组件实例 */
   component: any;
 }
@@ -32,6 +34,7 @@ export const useComponentConfigStore = create<State & Action>((set) => ({
     Container: {
       name: 'Container',
       defaultProps: {},
+      desc: '容器',
       component: Container
     },
     Button: {
@@ -40,11 +43,13 @@ export const useComponentConfigStore = create<State & Action>((set) => ({
         type: 'primary',
         text: '按钮',
       },
+      desc: '按钮',
       component: Button
     },
     Page: {
       name: 'Page',
       defaultProps: {},
+      desc: '页面',
       component: Page,
     }
   },

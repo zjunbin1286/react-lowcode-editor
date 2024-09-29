@@ -2,9 +2,10 @@ import React, { MouseEventHandler, useEffect, useState } from "react";
 import { useComponetsStore, Component } from '../../stores/components';
 import { useComponentConfigStore } from "../../stores/component-config";
 import HoverMask from '../HoverMask'
+import SelectedMask from '../SelectedMask'
 
 export function EditArea() {
-  const { components, addComponent } = useComponetsStore();
+  const { components, curComponentId, setCurComponentId } = useComponetsStore();
   const { componentConfig } = useComponentConfigStore();
 
   /**渲染组件 */
@@ -59,6 +60,14 @@ export function EditArea() {
     }
   }
 
+  const handleClick: MouseEventHandler = (e) => {
+    const target = (e.target as HTMLElement).closest('[data-component-id]');
+    if (target) {
+      const componentId = target.getAttribute('data-component-id');
+      componentId && setCurComponentId(+componentId);
+    }
+  }
+
   return (
     <div
       className="h-[100%] edit-area"
@@ -66,13 +75,22 @@ export function EditArea() {
       onMouseLeave={() => {
         setHoverComponentId(undefined)
       }}
+      onClick={handleClick}
     >
       {renderComponents(components)}
-      {hoverComponentId && (
+      {/* hover跟点击的时候不重复显示 */}
+      {hoverComponentId && hoverComponentId !== curComponentId && (
         <HoverMask
           portalWrapperClassName='portal-wrapper'
           containerClassName="edit-area"
           componentId={hoverComponentId}
+        />
+      )}
+      {curComponentId && (
+        <SelectedMask
+          portalWrapperClassName='portal-wrapper'
+          containerClassName='edit-area'
+          componentId={curComponentId}
         />
       )}
       <div className="portal-wrapper"></div>

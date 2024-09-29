@@ -28,6 +28,10 @@ function HoverMask({ componentId, containerClassName, portalWrapperClassName }: 
     updatePosition();
   }, [componentId]);
 
+  useEffect(() => {
+    updatePosition();
+  }, [components]);
+
   // 更新 mask 的位置
   function updatePosition() {
     if (!componentId) return;
@@ -108,7 +112,7 @@ function HoverMask({ componentId, containerClassName, portalWrapperClassName }: 
             whiteSpace: 'nowrap',
           }}
         >
-          {curComponent?.name}
+          {curComponent?.desc}
         </div>
       </div>
     </>

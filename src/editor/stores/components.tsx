@@ -7,6 +7,8 @@ export interface Component {
   name: string;
   /**组件参数 */
   props: any;
+  /**组件描述 */
+  desc: string;
   /**组件子级 */
   children?: Component[];
   /**父级 id，配合 children 关联父子节点 */
@@ -16,6 +18,10 @@ export interface Component {
 interface State {
   /**组件树 */
   components: Component[];
+  /**当前选中的组件 id */
+  curComponentId?: number | null;
+  /**当前选中的组件 */
+  curComponent: Component | null;
 }
 
 interface Action {
@@ -42,6 +48,12 @@ interface Action {
    * @returns 
    */
   updateComponentProps: (componentId: number, props: any) => void;
+  /**
+   * 设置当前选中的组件 id
+   * @param componentId 组件 id
+   * @returns 
+   */
+  setCurComponentId: (componentId: number | null) => void;
 }
 
 export const useComponetsStore = create<State & Action>(
@@ -54,6 +66,14 @@ export const useComponetsStore = create<State & Action>(
         desc: '页面',
       }
     ],
+    curComponentId: null,
+    curComponent: null,
+    setCurComponentId: (componentId) => {
+      set((state) => ({
+        curComponentId: componentId,
+        curComponent: getComponentById(componentId, state.components)
+      }))
+    },
     addComponent: (component, parentId) =>
       set((state) => {
         if (parentId) {
