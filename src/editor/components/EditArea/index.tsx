@@ -14,11 +14,11 @@ export function EditArea() {
       // 根据组件名称找到组件配置
       const config = componentConfig?.[component.name]
 
-      if (!config?.component) return;
+      if (!config?.dev) return;
 
       // 拿到 name 对应的组件实例，然后用 React.cloneElement 来创建组件
       return React.createElement(
-        config.component,
+        config.dev,
         {
           key: component.id,
           id: component.id,

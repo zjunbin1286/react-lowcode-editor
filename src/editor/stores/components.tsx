@@ -25,6 +25,8 @@ interface State {
   curComponentId?: number | null;
   /**当前选中的组件 */
   curComponent: Component | null;
+  /**组件状态：编辑 | 预览 */
+  mode: 'edit' | 'preview';
 }
 
 interface Action {
@@ -65,6 +67,12 @@ interface Action {
    * @returns 
    */
   updateComponentStyles: (componentId: number, styles: CSSProperties, replace?: boolean) => void;
+  /**
+   * 切换编辑或预览模式
+   * @param mode eidt | preview
+   * @returns 
+   */
+  setMode: (mode: State['mode']) => void;
 }
 
 export const useComponetsStore = create<State & Action>(
@@ -149,7 +157,9 @@ export const useComponetsStore = create<State & Action>(
           return { components: [...state.components] };
         }
         return { components: [...state.components] };
-      })
+      }),
+    mode: 'edit',
+    setMode: (mode) => set({ mode }),
   })
   )
 );
