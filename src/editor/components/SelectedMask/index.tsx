@@ -29,7 +29,9 @@ function SelectedMask({ containerClassName, portalWrapperClassName, componentId 
   }, [componentId]);
 
   useEffect(() => {
-    updatePosition();
+    setTimeout(() => {
+      updatePosition();
+    }, 200)
   }, [components])
 
   // 窗口大小发生变化，重新计算

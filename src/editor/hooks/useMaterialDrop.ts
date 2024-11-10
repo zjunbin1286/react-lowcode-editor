@@ -26,7 +26,7 @@ export function useMaterailDrop(accept: string[], id: number) {
         id: new Date().getTime(),
         name: item.type,
         desc: config.desc,
-        props: config.defaultProps
+        props: config.defaultProps,
       }, id)
     },
     collect: (monitor) => ({

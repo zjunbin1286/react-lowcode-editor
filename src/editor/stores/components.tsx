@@ -1,3 +1,4 @@
+import { CSSProperties } from 'react';
 import { create } from 'zustand';
 
 export interface Component {
@@ -13,6 +14,8 @@ export interface Component {
   children?: Component[];
   /**父级 id，配合 children 关联父子节点 */
   parentId?: number;
+  /**组件样式 styles */
+  styles?: CSSProperties;
 }
 
 interface State {
@@ -54,6 +57,14 @@ interface Action {
    * @returns 
    */
   setCurComponentId: (componentId: number | null) => void;
+  /**
+   * 更新组件样式
+   * @param componentId 组件 id
+   * @param styles 组件样式，css代码
+   * @param replace 是否覆盖样式
+   * @returns 
+   */
+  updateComponentStyles: (componentId: number, styles: CSSProperties, replace?: boolean) => void;
 }
 
 export const useComponetsStore = create<State & Action>(
@@ -130,6 +141,15 @@ export const useComponetsStore = create<State & Action>(
 
         return { components: [...state.components] };
       }),
+    updateComponentStyles: (componentId, styles, replace) =>
+      set((state) => {
+        const component = getComponentById(componentId, state.components);
+        if (component) {
+          component.styles = replace ? { ...styles } : { ...component.styles, ...styles };
+          return { components: [...state.components] };
+        }
+        return { components: [...state.components] };
+      })
   })
   )
 );
