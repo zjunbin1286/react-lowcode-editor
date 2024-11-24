@@ -17,6 +17,14 @@ export interface ComponentSetter {
   [key: string]: any;
 }
 
+/**组件事件 */
+export interface ComponentEvent {
+  /**事件名 */
+  name: string;
+  /**事件描述 */
+  label: string;
+}
+
 /**组件配置 */
 export interface ComponentConfig {
   /**组件名称 */
@@ -35,6 +43,8 @@ export interface ComponentConfig {
   dev?: any;
   /**预览状态的组件 */
   prod?: any;
+  /**组件的事件 */
+  events?: ComponentEvent[];
 }
 
 // state 就是 componentConfig 的映射。
@@ -96,6 +106,16 @@ export const useComponentConfigStore = create<State & Action>((set) => ({
           name: 'height',
           label: '高度',
           type: 'inputNumber',
+        },
+      ],
+      events: [
+        {
+          name: 'onClick',
+          label: '点击事件',
+        },
+        {
+          name: 'onDoubleClick',
+          label: '双击事件',
         },
       ]
     },
