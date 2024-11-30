@@ -1,8 +1,9 @@
 import { Modal, Segmented } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GoToLink, GoToLinkConfig } from "./actions/GoToLink";
 import { ComponentEvent } from "../../stores/component-config";
 import { ShowMessage, ShowMessageConfig } from "./actions/ShowMessage";
+import { CustomJS, CustomJSConfig } from "./actions/CustomJS";
 
 interface ActionModalProps {
   /**弹窗显示隐藏 */
@@ -10,10 +11,14 @@ interface ActionModalProps {
   /**事件配置 */
   eventConfig: ComponentEvent
   /**点击确定的回调 */
-  handleOk: (config?: GoToLinkConfig | ShowMessageConfig) => void
+  handleOk: (config?: ActionConfig) => void
   /**点击取消的回调 */
   handleCancel: () => void
+  /**当前的动作 */
+  action?: ActionConfig
 }
+
+export type ActionConfig = GoToLinkConfig | ShowMessageConfig | CustomJSConfig;
 
 /**
  * 事件弹窗
@@ -21,10 +26,23 @@ interface ActionModalProps {
  * @returns 
  */
 export function ActionModal(props: ActionModalProps) {
-  const { visible, handleOk, eventConfig, handleCancel } = props;
+  const { visible, handleOk, action, handleCancel } = props;
 
   const [key, setKey] = useState<string>('访问链接');
-  const [curConfig, setCurConfig] = useState<GoToLinkConfig | ShowMessageConfig>();
+  const [curConfig, setCurConfig] = useState<ActionConfig>();
+
+  const map = {
+    goToLink: '访问链接',
+    showMessage: '消息提示',
+    customJS: '自定义 JS'
+  }
+
+  // 编辑打开弹窗时，设置当前的 key，显示对应 tab
+  useEffect(() => {
+    if (action?.type) {
+      setKey(map[action?.type])
+    }
+  })
 
   return (
     <Modal
@@ -39,14 +57,37 @@ export function ActionModal(props: ActionModalProps) {
       <div className="h-[500px]">
         <Segmented value={key} onChange={setKey} block options={['访问链接', '消息提示', '自定义 JS']} />
         {
-          key === '访问链接' && <GoToLink onChange={(config) => {
-            setCurConfig(config);
-          }} />
+          key === '访问链接' && (
+            <GoToLink
+              key="goToLink"
+              value={action?.type === 'goToLink' ? action.url : ''}
+              onChange={(config) => {
+                setCurConfig(config);
+              }}
+            />
+          )
         }
         {
-          key === '消息提示' && <ShowMessage onChange={(config) => {
-            setCurConfig(config);
-          }} />
+          key === '消息提示' && (
+            <ShowMessage
+              key="showMessage"
+              value={action?.type === 'showMessage' ? action.config : undefined}
+              onChange={(config) => {
+                setCurConfig(config);
+              }}
+            />
+          )
+        }
+        {
+          key === '自定义 JS' && (
+            <CustomJS
+              key="customJS"
+              value={action?.type === 'customJS' ? action.code : ''}
+              onChange={(config) => {
+                setCurConfig(config);
+              }}
+            />
+          )
         }
       </div>
     </Modal>

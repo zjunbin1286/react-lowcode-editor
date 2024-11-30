@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import { Collapse, Input, Select, CollapseProps, Button } from 'antd';
 import { useComponetsStore } from '../../stores/components';
 import { useComponentConfigStore } from '../../stores/component-config';
 import { GoToLink, GoToLinkConfig } from './actions/GoToLink'
 import { ShowMessage, ShowMessageConfig } from './actions/ShowMessage';
 import type { ComponentEvent } from '../../stores/component-config';
-import { ActionModal } from './ActionModal';
+import { ActionConfig, ActionModal } from './ActionModal';
 
 
 /**
@@ -19,6 +19,8 @@ export function ComponentEvent() {
   const { componentConfig } = useComponentConfigStore();
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [curEvent, setCurEvent] = useState<ComponentEvent>();
+  const [curAction, setCurAction] = useState<ActionConfig>();
+  const [curActionIndex, setCurActionIndex] = useState<number>();
 
   if (!curComponent) return null;
 
@@ -37,6 +39,17 @@ export function ComponentEvent() {
     })
   }
 
+  // 编辑弹窗
+  function editAction(config: ActionConfig, index: number) {
+    if (!curComponent) {
+      return;
+    }
+    setCurAction(config);
+    // 记录下当前编辑的 action 的 index。
+    setCurActionIndex(index)
+    setActionModalOpen(true);
+  }
+
   // 从 componentConfig 取出对应组件的 events 配置。
   const items: CollapseProps['items'] = (componentConfig[curComponent.name].events || []).map(event => {
     return {
@@ -53,7 +66,7 @@ export function ComponentEvent() {
       ),
       children: <div>
         {
-          (curComponent.props[event.name]?.actions || []).map((item: GoToLinkConfig | ShowMessageConfig, index: number) => {
+          (curComponent.props[event.name]?.actions || []).map((item: ActionConfig, index: number) => {
             return (
               <div className='back'>
                 {
@@ -63,6 +76,9 @@ export function ComponentEvent() {
                       <span className='text-[#84868c]'>跳转至：</span>
                       <span className='text-[#1677ff]'>{item.url}</span>
                     </div>
+                    <div style={{ position: 'absolute', top: 10, right: 35, cursor: 'pointer' }}
+                      onClick={() => editAction(item, index)}
+                    ><SettingOutlined /></div>
                     <div
                       style={{ position: 'absolute', top: 10, right: 10, cursor: 'pointer' }}
                       onClick={() => deleteAction(event, index)}
@@ -78,12 +94,26 @@ export function ComponentEvent() {
                       <span className='text-[#84868c]'>{item.config.type === 'success' ? '成功消息' : '错误消息'}：</span>
                       <span className='text-[#1677ff]'>{item.config.text}</span>
                     </div>
+                    <div style={{ position: 'absolute', top: 10, right: 35, cursor: 'pointer' }}
+                      onClick={() => editAction(item, index)}
+                    ><SettingOutlined /></div>
                     <div
                       style={{ position: 'absolute', top: 10, right: 10, cursor: 'pointer' }}
                       onClick={() => deleteAction(event, index)}
                     >
                       <DeleteOutlined />
                     </div>
+                  </div> : null
+                }
+                {
+                  item.type === 'customJS' ? <div key="customJS" className='bg-[#f7f7f9] m-2 mx-0 p-[10px] relative rounded '>
+                    <div>自定义 JS</div>
+                    <div style={{ position: 'absolute', top: 10, right: 35, cursor: 'pointer' }}
+                      onClick={() => editAction(item, index)}
+                    ><SettingOutlined /></div>
+                    <div style={{ position: 'absolute', top: 10, right: 10, cursor: 'pointer' }}
+                      onClick={() => deleteAction(event, index)}
+                    ><DeleteOutlined /></div>
                   </div> : null
                 }
               </div>
@@ -95,19 +125,32 @@ export function ComponentEvent() {
     }
   })
 
-  function handleModalOk(config?: GoToLinkConfig | ShowMessageConfig) {
+  function handleModalOk(config?: ActionConfig) {
     if (!config || !curEvent || !curComponent) {
       return;
     }
 
-    updateComponentProps(curComponent.id, {
-      [curEvent.name]: {
-        actions: [
-          ...(curComponent.props[curEvent.name]?.actions || []),
-          config
-        ]
-      }
-    })
+    // 保存的时候如果有 curAction，就是修改，没有的话才是新增。
+    if (curAction) {
+      updateComponentProps(curComponent.id, {
+        [curEvent.name]: {
+          actions: curComponent.props[curEvent.name]?.actions.map((item: ActionConfig, index: number) => {
+            return index === curActionIndex ? config : item;
+          })
+        }
+      })
+    } else {
+      updateComponentProps(curComponent.id, {
+        [curEvent.name]: {
+          actions: [
+            ...(curComponent.props[curEvent.name]?.actions || []),
+            config
+          ]
+        }
+      })
+    }
+
+    setCurAction(undefined);
 
     setActionModalOpen(false)
   }
@@ -120,6 +163,7 @@ export function ComponentEvent() {
         defaultActiveKey={componentConfig[curComponent.name].events?.map(item => item.name)}
       />
       <ActionModal
+        action={curAction}
         visible={actionModalOpen}
         eventConfig={curEvent!}
         handleOk={handleModalOk}

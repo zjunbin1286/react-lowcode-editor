@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { Input, Select } from "antd"
 import { useComponetsStore } from "../../../stores/components";
+import { useEffect, useState } from "react";
 
 export interface ShowMessageConfig {
   type: 'showMessage',
@@ -11,22 +11,25 @@ export interface ShowMessageConfig {
 }
 
 export interface ShowMessageProps {
-  /**值 */
   value?: ShowMessageConfig['config']
-  /**值改变的回调 */
+  defaultValue?: ShowMessageConfig['config']
   onChange?: (config: ShowMessageConfig) => void
 }
 
-/**
- * 显示提示
- */
 export function ShowMessage(props: ShowMessageProps) {
-  const { value, onChange } = props;
+  const { value: val, defaultValue, onChange } = props;
 
   const { curComponentId } = useComponetsStore();
 
-  const [type, setType] = useState<'success' | 'error'>(value?.type || 'success');
-  const [text, setText] = useState<string>(value?.text || '');
+  const [type, setType] = useState<'success' | 'error'>(defaultValue?.type || 'success');
+  const [text, setText] = useState<string>(defaultValue?.text || '');
+
+  useEffect(() => {
+    if (val) {
+      setType(val.type)
+      setText(val.text)
+    }
+  }, [val]);
 
   function messageTypeChange(value: 'success' | 'error') {
     if (!curComponentId) return;

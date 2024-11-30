@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TextArea from "antd/es/input/TextArea";
-import { ComponentEvent } from "../../../stores/component-config";
 import { useComponetsStore } from "../../../stores/components";
 
 export interface GoToLinkConfig {
@@ -12,6 +11,8 @@ export interface GoToLinkConfig {
  * 跳转链接
  */
 export interface GoToLinkProps {
+  /**回显的数据 */
+  value?: string;
   /**默认值 */
   defaultValue?: string
   /**输入的改变事件*/
@@ -19,10 +20,14 @@ export interface GoToLinkProps {
 }
 
 export function GoToLink(props: GoToLinkProps) {
-  const { defaultValue, onChange } = props;
+  const { value: val, defaultValue, onChange } = props;
 
   const { curComponentId } = useComponetsStore();
   const [value, setValue] = useState(defaultValue);
+
+  useEffect(() => {
+    setValue(val)
+  }, [val])
 
   function urlChange(value: string) {
     if (!curComponentId) return;

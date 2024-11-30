@@ -4,6 +4,7 @@ import { Component, useComponetsStore } from "../../stores/components"
 import { message } from "antd";
 import { GoToLinkConfig } from "../Setting/actions/GoToLink";
 import { ShowMessageConfig } from "../Setting/actions/ShowMessage";
+import { ActionConfig } from "../Setting/ActionModal";
 
 /**
  * 预览 
@@ -23,15 +24,29 @@ export function Preview() {
 
       if (eventConfig) {
         props[event.name] = () => {
-          eventConfig?.actions?.forEach((action: GoToLinkConfig | ShowMessageConfig) => {
+          eventConfig?.actions?.forEach((action: ActionConfig) => {
             if (action.type === 'goToLink') {
+              // 跳转链接
               window.location.href = action.url;
             } else if (action.type === 'showMessage') {
+              // 消息提醒
               if (action.config.type === 'success') {
                 message.success(action.config.text);
               } else if (action.config.type === 'error') {
                 message.error(action.config.text);
               }
+            } else if (action.type === 'customJS') {
+              // 执行自定义事件
+              // new Function 可以传入任意个参数，最后一个是函数体，前面都会作为函数参数的名字。
+              const func = new Function('context', action.code)
+              // 传入了当前组件的 name、props 还有一个方法。
+              func({
+                name: component.name,
+                props: component.props,
+                showMessage(content: string) {
+                  message.success(content);
+                }
+              });
             }
           })
 
