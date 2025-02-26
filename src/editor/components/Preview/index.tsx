@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useComponentConfigStore } from "../../stores/component-config";
 import { Component, useComponetsStore } from "../../stores/components"
 import { message } from "antd";
@@ -13,7 +13,7 @@ import { ActionConfig } from "../Setting/ActionModal";
 export function Preview() {
   const { components } = useComponetsStore();
   const { componentConfig } = useComponentConfigStore();
-
+  const componentRefs = useRef<Record<string, any>>({});
   // 绑定的事件 
   // 根据 componentConfig 里的事件类型给组件绑定事件。
   function handleEvent(component: Component) {
@@ -47,6 +47,12 @@ export function Preview() {
                   message.success(content);
                 }
               });
+            } else if (action.type === 'componentMethod') {
+              const component = componentRefs.current[action.config.componentId];
+
+              if (component) {
+                component[action.config.method]?.();
+              }
             }
           })
 
@@ -71,6 +77,8 @@ export function Preview() {
           id: component.id,
           name: component.name,
           styles: component.styles,
+          // 可能需要判空处理，否则有提示（Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()）
+          ref: (ref: Record<string, any>) => { componentRefs.current[component.id] = ref; },
           ...config.defaultProps,
           ...component.props,
           ...handleEvent(component),

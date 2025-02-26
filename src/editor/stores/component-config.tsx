@@ -5,6 +5,8 @@ import ButtonDev from '../materials/Button/dev';
 import ButtonProd from '../materials/Button/prod';
 import PageDev from '../materials/Page/dev';
 import PageProd from '../materials/Page/prod';
+import ModalDev from '../materials/Modal/dev'
+import ModalProd from '../materials/Modal/prod'
 
 /**设置组件属性 */
 export interface ComponentSetter {
@@ -23,6 +25,12 @@ export interface ComponentEvent {
   name: string;
   /**事件描述 */
   label: string;
+}
+
+/**组件方法 */
+export interface ComponentMethod {
+  name: string
+  label: string
 }
 
 /**组件配置 */
@@ -45,6 +53,8 @@ export interface ComponentConfig {
   prod?: any;
   /**组件的事件 */
   events?: ComponentEvent[];
+  /**组件的方法 */
+  methods?: ComponentMethod[];
 }
 
 // state 就是 componentConfig 的映射。
@@ -125,7 +135,44 @@ export const useComponentConfigStore = create<State & Action>((set) => ({
       desc: '页面',
       dev: PageDev,
       prod: PageProd
-    }
+    },
+    Modal: {
+      name: 'Modal',
+      defaultProps: {
+        title: '弹窗'
+      },
+      setter: [
+        {
+          name: 'title',
+          label: '标题',
+          type: 'input'
+        }
+      ],
+      stylesSetter: [],
+      events: [
+        {
+          name: 'onOk',
+          label: '确认事件',
+        },
+        {
+          name: 'onCancel',
+          label: '取消事件'
+        },
+      ],
+      methods: [
+        {
+          name: 'open',
+          label: '打开弹窗',
+        },
+        {
+          name: 'close',
+          label: '关闭弹窗'
+        }
+      ],
+      desc: '弹窗',
+      dev: ModalDev,
+      prod: ModalProd
+    },
   },
   // 往 componentConfig 里加配置
   registerComponent: (name, componentConfig) => set((state) => {

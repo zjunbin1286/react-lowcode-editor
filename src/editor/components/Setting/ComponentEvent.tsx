@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { DeleteOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons';
 import { Collapse, Input, Select, CollapseProps, Button } from 'antd';
-import { useComponetsStore } from '../../stores/components';
+import { getComponentById, useComponetsStore } from '../../stores/components';
 import { useComponentConfigStore } from '../../stores/component-config';
-import { GoToLink, GoToLinkConfig } from './actions/GoToLink'
-import { ShowMessage, ShowMessageConfig } from './actions/ShowMessage';
 import type { ComponentEvent } from '../../stores/component-config';
 import { ActionConfig, ActionModal } from './ActionModal';
 
@@ -15,7 +13,7 @@ import { ActionConfig, ActionModal } from './ActionModal';
  */
 export function ComponentEvent() {
 
-  const { curComponentId, curComponent, updateComponentProps } = useComponetsStore();
+  const { curComponentId, components, curComponent, updateComponentProps } = useComponetsStore();
   const { componentConfig } = useComponentConfigStore();
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [curEvent, setCurEvent] = useState<ComponentEvent>();
@@ -71,7 +69,7 @@ export function ComponentEvent() {
               <div className='back'>
                 {
                   item.type === 'goToLink' ? <div className=' bg-[#f7f7f9] m-3 mx-0 p-[10px] relative rounded hover:bg-[#f4f4f4]'>
-                    <div >跳转链接</div>
+                    <div className='text-[#1677ff]'>跳转链接</div>
                     <div>
                       <span className='text-[#84868c]'>跳转至：</span>
                       <span className='text-[#1677ff]'>{item.url}</span>
@@ -89,7 +87,7 @@ export function ComponentEvent() {
                 }
                 {
                   item.type === 'showMessage' ? <div className=' bg-[#f7f7f9] m-2 mx-0 p-[10px] relative rounded '>
-                    <div>消息弹窗</div>
+                    <div className='text-[#1677ff]'>消息弹窗</div>
                     <div>
                       <span className='text-[#84868c]'>{item.config.type === 'success' ? '成功消息' : '错误消息'}：</span>
                       <span className='text-[#1677ff]'>{item.config.text}</span>
@@ -107,7 +105,21 @@ export function ComponentEvent() {
                 }
                 {
                   item.type === 'customJS' ? <div key="customJS" className='bg-[#f7f7f9] m-2 mx-0 p-[10px] relative rounded '>
-                    <div>自定义 JS</div>
+                    <div className='text-[#1677ff]'>自定义 JS</div>
+                    <div style={{ position: 'absolute', top: 10, right: 35, cursor: 'pointer' }}
+                      onClick={() => editAction(item, index)}
+                    ><SettingOutlined /></div>
+                    <div style={{ position: 'absolute', top: 10, right: 10, cursor: 'pointer' }}
+                      onClick={() => deleteAction(event, index)}
+                    ><DeleteOutlined /></div>
+                  </div> : null
+                }
+                {
+                  item.type === 'componentMethod' ? <div key="componentMethod" className='bg-[#f7f7f9] m-2 mx-0 p-[10px] relative rounded '>
+                    <div className='text-[#1677ff]'>组件方法</div>
+                    <div>{getComponentById(item.config.componentId, components)?.desc}</div>
+                    <div>{item.config.componentId}</div>
+                    <div>{item.config.method}</div>
                     <div style={{ position: 'absolute', top: 10, right: 35, cursor: 'pointer' }}
                       onClick={() => editAction(item, index)}
                     ><SettingOutlined /></div>
