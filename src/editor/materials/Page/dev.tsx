@@ -5,7 +5,7 @@ function Page({ id, name, children, styles }: CommonComponentProps) {
 
   // Page 组件中，可以存放其他组件
   // 每添加一个组件，都要在这里手动添加！！！
-  const { canDrop, drop } = useMaterailDrop(['Button', 'Container', 'Modal'], id);
+  const { canDrop, drop } = useMaterailDrop(['Button', 'Container', 'Modal', 'Table'], id);
 
   return (
     <div
