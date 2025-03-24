@@ -1,5 +1,6 @@
 import { CSSProperties } from 'react';
-import { create } from 'zustand';
+import { create, StateCreator } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface Component {
   /**组件唯一 id */
@@ -75,94 +76,186 @@ interface Action {
   setMode: (mode: State['mode']) => void;
 }
 
-export const useComponetsStore = create<State & Action>(
-  ((set, get) => ({
-    components: [
-      {
-        id: 1,
-        name: 'Page',
-        props: {},
-        desc: '页面',
-      }
-    ],
-    curComponentId: null,
-    curComponent: null,
-    setCurComponentId: (componentId) => {
-      set((state) => ({
-        curComponentId: componentId,
-        curComponent: getComponentById(componentId, state.components)
-      }))
-    },
-    addComponent: (component, parentId) =>
-      set((state) => {
-        if (parentId) {
-          const parentComponent = getComponentById(
-            parentId,
-            state.components
-          );
+// export const useComponetsStore = create<State & Action>(
+//   ((set, get) => ({
+//     components: [
+//       {
+//         id: 1,
+//         name: 'Page',
+//         props: {},
+//         desc: '页面',
+//       }
+//     ],
+//     curComponentId: null,
+//     curComponent: null,
+//     setCurComponentId: (componentId) => {
+//       set((state) => ({
+//         curComponentId: componentId,
+//         curComponent: getComponentById(componentId, state.components)
+//       }))
+//     },
+//     addComponent: (component, parentId) =>
+//       set((state) => {
+//         if (parentId) {
+//           const parentComponent = getComponentById(
+//             parentId,
+//             state.components
+//           );
 
-          if (parentComponent) {
-            // 已有子级就 push
-            if (parentComponent.children) {
-              parentComponent.children.push(component);
-            } else {
-              // 没有子级就赋值
-              parentComponent.children = [component];
-            }
-          }
+//           if (parentComponent) {
+//             // 已有子级就 push
+//             if (parentComponent.children) {
+//               parentComponent.children.push(component);
+//             } else {
+//               // 没有子级就赋值
+//               parentComponent.children = [component];
+//             }
+//           }
 
-          // 把 parentId 指向这个 parent
-          component.parentId = parentId;
-          return { components: [...state.components] };
-        }
-        return { components: [...state.components, component] };
-      }),
-    deleteComponent: (componentId) => {
-      if (!componentId) return;
-      // 找到当前组件
-      const component = getComponentById(componentId, get().components);
-      if (component?.parentId) {
-        // 根据当前组件的 parentId 找到父级组件
+//           // 把 parentId 指向这个 parent
+//           component.parentId = parentId;
+//           return { components: [...state.components] };
+//         }
+//         return { components: [...state.components, component] };
+//       }),
+//     deleteComponent: (componentId) => {
+//       if (!componentId) return;
+//       // 找到当前组件
+//       const component = getComponentById(componentId, get().components);
+//       if (component?.parentId) {
+//         // 根据当前组件的 parentId 找到父级组件
+//         const parentComponent = getComponentById(
+//           component.parentId,
+//           get().components
+//         );
+
+//         if (parentComponent) {
+//           // 在父级 children 中过滤掉当前组件
+//           parentComponent.children = parentComponent?.children?.filter(
+//             (item) => item.id !== +componentId
+//           );
+
+//           set({ components: [...get().components] });
+//         }
+//       }
+//     },
+//     updateComponentProps: (componentId, props) =>
+//       set((state) => {
+//         const component = getComponentById(componentId, state.components);
+//         if (component) {
+//           component.props = { ...component.props, ...props };
+
+//           return { components: [...state.components] };
+//         }
+
+//         return { components: [...state.components] };
+//       }),
+//     updateComponentStyles: (componentId, styles, replace) =>
+//       set((state) => {
+//         const component = getComponentById(componentId, state.components);
+//         if (component) {
+//           component.styles = replace ? { ...styles } : { ...component.styles, ...styles };
+//           return { components: [...state.components] };
+//         }
+//         return { components: [...state.components] };
+//       }),
+//     mode: 'edit',
+//     setMode: (mode) => set({ mode }),
+//   })
+//   )
+// );
+
+
+// 做持久化
+const creator: StateCreator<State & Action> = (set, get) => ({
+  components: [
+    {
+      id: 1,
+      name: 'Page',
+      props: {},
+      desc: '页面',
+    }
+  ],
+  curComponentId: null,
+  curComponent: null,
+  setCurComponentId: (componentId) => {
+    set((state) => ({
+      curComponentId: componentId,
+      curComponent: getComponentById(componentId, state.components)
+    }))
+  },
+  addComponent: (component, parentId) =>
+    set((state) => {
+      if (parentId) {
         const parentComponent = getComponentById(
-          component.parentId,
-          get().components
+          parentId,
+          state.components
         );
 
         if (parentComponent) {
-          // 在父级 children 中过滤掉当前组件
-          parentComponent.children = parentComponent?.children?.filter(
-            (item) => item.id !== +componentId
-          );
-
-          set({ components: [...get().components] });
+          // 已有子级就 push
+          if (parentComponent.children) {
+            parentComponent.children.push(component);
+          } else {
+            // 没有子级就赋值
+            parentComponent.children = [component];
+          }
         }
+
+        // 把 parentId 指向这个 parent
+        component.parentId = parentId;
+        return { components: [...state.components] };
       }
-    },
-    updateComponentProps: (componentId, props) =>
-      set((state) => {
-        const component = getComponentById(componentId, state.components);
-        if (component) {
-          component.props = { ...component.props, ...props };
+      return { components: [...state.components, component] };
+    }),
+  deleteComponent: (componentId) => {
+    if (!componentId) return;
+    // 找到当前组件
+    const component = getComponentById(componentId, get().components);
+    if (component?.parentId) {
+      // 根据当前组件的 parentId 找到父级组件
+      const parentComponent = getComponentById(
+        component.parentId,
+        get().components
+      );
 
-          return { components: [...state.components] };
-        }
+      if (parentComponent) {
+        // 在父级 children 中过滤掉当前组件
+        parentComponent.children = parentComponent?.children?.filter(
+          (item) => item.id !== +componentId
+        );
+
+        set({ components: [...get().components] });
+      }
+    }
+  },
+  updateComponentProps: (componentId, props) =>
+    set((state) => {
+      const component = getComponentById(componentId, state.components);
+      if (component) {
+        component.props = { ...component.props, ...props };
 
         return { components: [...state.components] };
-      }),
-    updateComponentStyles: (componentId, styles, replace) =>
-      set((state) => {
-        const component = getComponentById(componentId, state.components);
-        if (component) {
-          component.styles = replace ? { ...styles } : { ...component.styles, ...styles };
-          return { components: [...state.components] };
-        }
+      }
+
+      return { components: [...state.components] };
+    }),
+  updateComponentStyles: (componentId, styles, replace) =>
+    set((state) => {
+      const component = getComponentById(componentId, state.components);
+      if (component) {
+        component.styles = replace ? { ...styles } : { ...component.styles, ...styles };
         return { components: [...state.components] };
-      }),
-    mode: 'edit',
-    setMode: (mode) => set({ mode }),
-  })
-  )
-);
+      }
+      return { components: [...state.components] };
+    }),
+  mode: 'edit',
+  setMode: (mode) => set({ mode }),
+});
+
+export const useComponetsStore = create<State & Action>()(persist(creator, {
+  name: 'xxx'
+}));
 
 /**根据 id 获取组件 */
 // 如果节点 id 是查找的目标 id 就返回当前组件，否则遍历 children 递归查找

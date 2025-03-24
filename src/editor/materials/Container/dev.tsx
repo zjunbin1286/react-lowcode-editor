@@ -6,7 +6,7 @@ import { useMaterailDrop } from '../../hooks/useMaterialDrop';
 const Container = ({ id, name, children, styles }: CommonComponentProps) => {
 
   // Container 组件中，可以存放其他组件
-  const { canDrop, drop } = useMaterailDrop(['Button', 'Container', 'Table'], id);
+  const { canDrop, drop } = useMaterailDrop(['Button', 'Container', 'Table', 'Form'], id);
 
   const divRef = useRef<HTMLDivElement>(null);
 

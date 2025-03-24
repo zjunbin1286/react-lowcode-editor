@@ -23,7 +23,7 @@ export function Preview() {
       const eventConfig = component.props[event.name];
 
       if (eventConfig) {
-        props[event.name] = () => {
+        props[event.name] = (...args: any[]) => {
           eventConfig?.actions?.forEach((action: ActionConfig) => {
             if (action.type === 'goToLink') {
               // 跳转链接
@@ -38,7 +38,7 @@ export function Preview() {
             } else if (action.type === 'customJS') {
               // 执行自定义事件
               // new Function 可以传入任意个参数，最后一个是函数体，前面都会作为函数参数的名字。
-              const func = new Function('context', action.code)
+              const func = new Function('context', 'args', action.code)
               // 传入了当前组件的 name、props 还有一个方法。
               func({
                 name: component.name,
@@ -46,12 +46,12 @@ export function Preview() {
                 showMessage(content: string) {
                   message.success(content);
                 }
-              });
+              }, args);
             } else if (action.type === 'componentMethod') {
               const component = componentRefs.current[action.config.componentId];
 
               if (component) {
-                component[action.config.method]?.();
+                component[action.config.method]?.(...args);
               }
             }
           })
